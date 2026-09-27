@@ -1,0 +1,8 @@
+.maker .paper-summary small{display:block;color:#9aafb5;font-size:11px;line-height:1.5;margin-top:10px}
+.maker .maker-state p,.maker>.panel>p{font-size:12px;line-height:1.6;color:#b3c6ce}
+.maker .table-panel{margin-bottom:14px}
+.maker .panel-head>div{min-width:0}.maker .panel-head span{line-height:1.5}
+.maker-inventory{display:flex;gap:12px 22px;flex-wrap:wrap;background:#0e2228;padding:14px;margin-top:12px;border:1px solid #34565d;border-radius:5px;font-size:12px;line-height:1.6}
+.maker .paper-actions{flex-wrap:wrap;margin-top:14px}
+.maker .paper-inputs label{min-width:0}.maker .paper-inputs input{width:100%;min-width:0}
+@media(max-width:700px){.maker .paper-inputs{grid-template-columns:1fr}.maker .panel-head{flex-wrap:wrap;gap:10px}.maker .kraken-banner{flex-wrap:wrap}.maker .paper-summary{grid-template-columns:1fr 1fr}}
