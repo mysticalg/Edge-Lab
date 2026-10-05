@@ -2,6 +2,17 @@
 
 [Project page](https://mysticalg.github.io/Edge-Lab/) · [Download for Windows](https://github.com/mysticalg/Edge-Lab/releases/latest)
 
+## Linux and macOS
+
+Portable downloads include Node.js 24.13.0 and production dependencies. Choose Linux x64/ARM64 or macOS Intel (darwin-x64)/Apple Silicon (darwin-arm64) from [Releases](https://github.com/mysticalg/Edge-Lab/releases/latest). Extract the `.tar.gz` into a writable folder, then run `./START_EDGE_LAB.sh` in Terminal (or `START_EDGE_LAB.command` on Mac). Open http://127.0.0.1:4178 and keep the terminal open. Data is stored in `data/` beside the app; preserve it when upgrading. If needed, run `chmod +x START_EDGE_LAB.sh START_EDGE_LAB.command`.
+
+Public market feeds, research and paper strategies work on these platforms. **Authenticated Kraken account checks and real orders require Windows DPAPI and are unavailable on Linux/macOS.** No credentials are included.
+
+From source on Linux/macOS, install Node.js 22+ (24 LTS recommended), then run `npm ci`, `npm run build`, and `npm start`. For development use `npm run dev`.
+
+Native builds and tests run in the **Build Linux and macOS downloads** GitHub Actions workflow before release upload. A passing build verifies compilation and automated tests; desktop interaction on physical Linux/Mac machines has not yet been verified.
+
+
 ## Windows download
 
 Download and extract the Windows x64 ZIP, then double-click `START_EDGE_LAB.bat`. The release includes Node.js and production dependencies; no separate installation is required. Open http://127.0.0.1:4178 after the server starts. Keep the console open while using the app. Extract to a writable folder; paper ledgers are saved in `data/` beside the app. This download contains no credentials or existing trading history.

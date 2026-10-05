@@ -1,0 +1,64 @@
+name: Build Linux and macOS downloads
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-22.04, platform: linux, arch: x64}
+          - {os: ubuntu-22.04-arm, platform: linux, arch: arm64}
+          - {os: macos-15-intel, platform: darwin, arch: x64}
+          - {os: macos-14, platform: darwin, arch: arm64}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.0'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Package clean portable app
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          name="Edge-Lab-0.1.0-$PLATFORM-$ARCH"
+          mkdir -p "$RUNNER_TEMP/$name/runtime"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/$name"
+          rm -rf "$RUNNER_TEMP/$name/site" "$RUNNER_TEMP/$name/.github"
+          cp -R dist "$RUNNER_TEMP/$name/dist"
+          cd "$RUNNER_TEMP/$name"
+          npm ci --omit=dev
+          curl --fail --location --output node.tar.gz "https://nodejs.org/dist/v24.13.0/node-v24.13.0-$PLATFORM-$ARCH.tar.gz"
+          curl --fail --location --output SHASUMS256.txt https://nodejs.org/dist/v24.13.0/SHASUMS256.txt
+          expected=$(awk -v file="node-v24.13.0-$PLATFORM-$ARCH.tar.gz" '$2 == file {print $1}' SHASUMS256.txt)
+          test -n "$expected"
+          actual=$(shasum -a 256 node.tar.gz | awk '{print $1}')
+          test "$expected" = "$actual"
+          tar -xzf node.tar.gz --strip-components=1 -C runtime
+          rm node.tar.gz SHASUMS256.txt
+          chmod +x START_EDGE_LAB.sh START_EDGE_LAB.command
+          runtime/bin/node --version
+          runtime/bin/node --check server.mjs
+          ./START_EDGE_LAB.sh > smoke.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid 2>/dev/null || true' EXIT
+          curl --fail --retry 15 --retry-connrefused --retry-delay 1 http://127.0.0.1:4178/api/state > /dev/null
+          curl --fail http://127.0.0.1:4178/ > /dev/null
+          kill $server_pid
+          wait $server_pid || true
+          trap - EXIT
+          rm -rf data smoke.log
+          tar -czf "$RUNNER_TEMP/$name.tar.gz" -C "$RUNNER_TEMP" "$name"
+          cd "$RUNNER_TEMP"
+          shasum -a 256 "$name.tar.gz" > "$name.sha256"
+      - name: Publish verified package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload v0.1.0 "$RUNNER_TEMP"/Edge-Lab-0.1.0-*.tar.gz "$RUNNER_TEMP"/Edge-Lab-0.1.0-*.sha256 --repo "$GITHUB_REPOSITORY" --clobber
